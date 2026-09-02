@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>muv — Dashboard de Supply (ITAPUA + CENTRAL)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#0f1115; --card:#181b21; --text:#e8eaed; --muted:#9aa0a6; --accent:#4fc3f7; --accent2:#ffb74d; --good:#66bb6a; --bad:#ef5350; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  header { padding: 28px 32px 12px; border-bottom: 1px solid #2a2e37; }
+  header h1 { margin: 0 0 4px; font-size: 24px; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  .container { padding: 24px 32px 60px; max-width: 1200px; margin: 0 auto; }
+  .kpi-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom: 32px; }
+  .kpi { background: var(--card); border-radius: 12px; padding: 18px 20px; border: 1px solid #2a2e37; }
+  .kpi .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .value { font-size: 26px; font-weight: 700; margin-top: 6px; }
+  .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  section { margin-bottom: 40px; }
+  section h2 { font-size: 16px; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); margin-bottom: 14px; }
+  .charts-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .chart-card { background: var(--card); border-radius: 12px; padding: 18px; border: 1px solid #2a2e37; }
+  table { width:100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow:hidden; }
+  th, td { text-align:left; padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #2a2e37; }
+  th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; }
+  tr:last-child td { border-bottom: none; }
+  .insights { background: var(--card); border-radius: 12px; padding: 4px 20px; border: 1px solid #2a2e37; }
+  .insights li { margin: 14px 0; line-height: 1.5; font-size: 14px; }
+  .badge { display:inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight:600; }
+  .badge.good { background: rgba(102,187,106,.15); color: var(--good); }
+  .badge.bad { background: rgba(239,83,80,.15); color: var(--bad); }
+  footer { text-align:center; color: var(--muted); font-size: 12px; padding: 20px; }
+  @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>muv — Dashboard de Supply (foco ITAPUA + CENTRAL)</h1>
+  <p>Generado automáticamente el 2026-09-02 14:20 UTC · Fuente: queries Athena, ver historial en el repo de conocimiento</p>
+</header>
+<div class="container">
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="label">GMV total histórico</div><div class="value">55,937,969,945 Gs</div><div class="sub">Desde 2024-12-01, todas las zonas</div></div><div class="kpi"><div class="label">% Finalización ITAPUA</div><div class="value">66.2%</div><div class="sub">Histórico completo</div></div><div class="kpi"><div class="label">% Finalización CENTRAL</div><div class="value">40.7%</div><div class="sub">Histórico completo</div></div><div class="kpi"><div class="label">Cancelaciones por demora (CENTRAL)</div><div class="value">57.5%</div><div class="sub">Tardó demasiado + espera</div></div>
+  </div>
+
+  <section>
+    <h2>Insights</h2>
+    <ul class="insights">
+      <li>ITAPUA finaliza 66.2% de sus solicitudes vs 40.7% en CENTRAL — CENTRAL pierde más del doble de demanda en el camino (cancelaciones + sin conductor).</li><li>CENTRAL concentra 47.7% del GMV con un ticket implícito mucho mayor que ITAPUA (47.7% del GMV total con 809,633 viajes finalizados vs 1,447,290 en ITAPUA), reflejo de su mezcla B2B (17.5% de los viajes finalizados).</li><li>ITAPUA: la tasa de finalización de intenciones cayó de 87.5% (histórico) a 78.8% en las últimas 4 semanas (-8.7 pp) — señal de deterioro reciente a confirmar con más semanas de dato.</li><li>CENTRAL: la tasa de finalización de intenciones cayó de 67.8% (histórico) a 59.3% en las últimas 4 semanas (-8.5 pp) — señal de deterioro reciente a confirmar con más semanas de dato.</li><li>En CENTRAL, el 57.5% de las cancelaciones son por demora/espera del conductor (Tardó demasiado 43.3%, Mucho tiempo de espera 14.2%) — la palanca más accionable desde supply.</li><li>El 69.9% de los pasajeros en CENTRAL matchea con una cuenta UENO, pero solo el 54.5% paga efectivamente con tarjeta UENO — oportunidad de cross-sell no explotada del todo.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Tendencias — últimas 10 semanas</h2>
+    <div class="charts-grid">
+      <div class="chart-card"><canvas id="chartGmv"></canvas></div>
+      <div class="chart-card"><canvas id="chartFinRate"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Resumen por zona — histórico completo (weekly muv)</h2>
+    <table>
+      <thead><tr><th>Zona</th><th>Solicitudes</th><th>Finalizados</th><th>% Finalización</th><th>% Cancelados</th><th>GMV (Gs)</th><th>% del GMV</th></tr></thead>
+      <tbody><tr><td>CENTRAL</td><td>1,990,578</td><td>809,633</td><td>40.7%</td><td>29.9%</td><td>26,680,035,889</td><td>47.7%</td></tr><tr><td>ITAPUA</td><td>2,186,536</td><td>1,447,290</td><td>66.2%</td><td>25.5%</td><td>22,441,542,333</td><td>40.1%</td></tr><tr><td>ALTO PARANA</td><td>374,499</td><td>250,364</td><td>66.9%</td><td>24.1%</td><td>6,551,168,937</td><td>11.7%</td></tr><tr><td>CORDILLERA</td><td>4,688</td><td>466</td><td>9.9%</td><td>9.3%</td><td>61,486,186</td><td>0.1%</td></tr><tr><td>PRESIDENTE HAYES</td><td>2,911</td><td>997</td><td>34.2%</td><td>16.8%</td><td>40,362,986</td><td>0.1%</td></tr><tr><td>CAAGUAZU</td><td>805</td><td>103</td><td>12.8%</td><td>8.4%</td><td>37,079,980</td><td>0.1%</td></tr><tr><td>MISIONES</td><td>635</td><td>99</td><td>15.6%</td><td>8.5%</td><td>27,870,400</td><td>0.0%</td></tr><tr><td>PARAGUARI</td><td>1,029</td><td>113</td><td>11.0%</td><td>10.4%</td><td>22,733,178</td><td>0.0%</td></tr><tr><td>GUAIRA</td><td>578</td><td>63</td><td>10.9%</td><td>8.0%</td><td>21,348,650</td><td>0.0%</td></tr><tr><td>CANINDEYU</td><td>226</td><td>32</td><td>14.2%</td><td>5.3%</td><td>16,180,100</td><td>0.0%</td></tr><tr><td>CONCEPCION</td><td>197</td><td>56</td><td>28.4%</td><td>8.1%</td><td>11,758,333</td><td>0.0%</td></tr><tr><td>CAAZAPA</td><td>220</td><td>42</td><td>19.1%</td><td>5.5%</td><td>11,499,240</td><td>0.0%</td></tr><tr><td>SAN PEDRO</td><td>175</td><td>30</td><td>17.1%</td><td>10.9%</td><td>10,682,300</td><td>0.0%</td></tr><tr><td>Departamento no encontrado</td><td>263</td><td>25</td><td>9.5%</td><td>2.7%</td><td>2,088,200</td><td>0.0%</td></tr><tr><td>BOQUERON</td><td>81</td><td>3</td><td>3.7%</td><td>8.6%</td><td>1,269,000</td><td>0.0%</td></tr><tr><td>Ã‘EEMBUCU</td><td>296</td><td>10</td><td>3.4%</td><td>5.1%</td><td>521,733</td><td>0.0%</td></tr><tr><td>AMAMBAY</td><td>1,205</td><td>3</td><td>0.2%</td><td>2.0%</td><td>342,500</td><td>0.0%</td></tr><tr><td>ALTO PARAGUAY</td><td>22</td><td>0</td><td>0.0%</td><td>0.0%</td><td>0</td><td>0.0%</td></tr></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Intenciones por zona — histórico vs últimas 4 semanas</h2>
+    <table>
+      <thead><tr><th>Zona</th><th>Intenciones</th><th>% del total</th><th>% Finished (hist.)</th><th>% Finished (recientes)</th><th>% Cancelled (hist.)</th><th>% Cancelled (recientes)</th></tr></thead>
+      <tbody><tr><td>ITAPUA</td><td>1,654,625</td><td>52.6%</td><td>87.5%</td><td>78.8%</td><td>10.6%</td><td>20.0%</td></tr><tr><td>CENTRAL</td><td>1,191,278</td><td>37.9%</td><td>67.8%</td><td>59.3%</td><td>22.3%</td><td>30.9%</td></tr></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Detalle CENTRAL — motivos de cancelación</h2>
+    <div class="charts-grid">
+      <div class="chart-card"><canvas id="chartMotivos"></canvas></div>
+      <div class="chart-card" style="display:flex;flex-direction:column;justify-content:center;gap:14px;">
+        <div><span class="label" style="color:var(--muted);font-size:12px;">Viajes por intención (reintentos)</span><div style="font-size:22px;font-weight:700;">1.7</div></div>
+        <div><span class="label" style="color:var(--muted);font-size:12px;">ETA promedio</span><div style="font-size:22px;font-weight:700;">275 seg</div></div>
+        <div><span class="label" style="color:var(--muted);font-size:12px;">Distancia pickup promedio</span><div style="font-size:22px;font-weight:700;">1509 m</div></div>
+        <div><span class="label" style="color:var(--muted);font-size:12px;">% pasajeros con cuenta UENO</span><div style="font-size:22px;font-weight:700;">69.9%</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Dashboard generado por scripts/generar_dashboard.py · Datos crudos y detalle metodológico en Resultado consultas/_conocimiento-acumulado.md</footer>
+</div>
+
+<script>
+const gmvData = {"labels": ["2026-06-29", "2026-07-06", "2026-07-13", "2026-07-20", "2026-07-27", "2026-08-03", "2026-08-10", "2026-08-17", "2026-08-24", "2026-08-31"], "series": {"CENTRAL": [145708933, 154684301, 167152250, 160586089, 154526420, 167396439, 147154851, 148992841, 148544877, 10705308], "ITAPUA": [85330930, 75885760, 75223350, 74693470, 82195700, 80948370, 74311300, 71498970, 64715610, 9582810]}};
+const finRateData = {"labels": ["2026-06-29", "2026-07-06", "2026-07-13", "2026-07-20", "2026-07-27", "2026-08-03", "2026-08-10", "2026-08-17", "2026-08-24", "2026-08-31"], "series": {"CENTRAL": [31.6, 39.8, 49.6, 48.2, 32.2, 31.7, 37.2, 35.3, 44.7, 27.0], "ITAPUA": [56.5, 57.1, 65.3, 63.2, 60.7, 61.0, 58.2, 58.7, 54.1, 53.4]}};
+const motivosData = [{"motivo": "Tard\u00f3 demasiado", "pct": 43.3}, {"motivo": "Mucho tiempo de espera", "pct": 14.2}, {"motivo": "(sin motivo)", "pct": 11.4}, {"motivo": "Me arrepent\u00ed", "pct": 7.1}, {"motivo": "El conductor no se mueve", "pct": 5.0}, {"motivo": "El conductor est\u00e1 yendo a otro destino", "pct": 4.6}];
+
+new Chart(document.getElementById('chartGmv'), {
+  type: 'line',
+  data: {
+    labels: gmvData.labels,
+    datasets: Object.keys(gmvData.series).map((zona, i) => ({
+      label: zona,
+      data: gmvData.series[zona],
+      borderColor: i === 0 ? '#4fc3f7' : '#ffb74d',
+      backgroundColor: 'transparent',
+      tension: 0.3,
+    }))
+  },
+  options: { plugins: { title: { display:true, text:'GMV semanal por zona (Gs)', color:'#e8eaed' }, legend: { labels: { color:'#e8eaed' } } },
+    scales: { x: { ticks: { color:'#9aa0a6' } }, y: { ticks: { color:'#9aa0a6' } } } }
+});
+
+new Chart(document.getElementById('chartFinRate'), {
+  type: 'line',
+  data: {
+    labels: finRateData.labels,
+    datasets: Object.keys(finRateData.series).map((zona, i) => ({
+      label: zona,
+      data: finRateData.series[zona],
+      borderColor: i === 0 ? '#66bb6a' : '#ef5350',
+      backgroundColor: 'transparent',
+      tension: 0.3,
+    }))
+  },
+  options: { plugins: { title: { display:true, text:'% Finalización semanal por zona', color:'#e8eaed' }, legend: { labels: { color:'#e8eaed' } } },
+    scales: { x: { ticks: { color:'#9aa0a6' } }, y: { ticks: { color:'#9aa0a6' } } } }
+});
+
+new Chart(document.getElementById('chartMotivos'), {
+  type: 'doughnut',
+  data: {
+    labels: motivosData.map(m => m.motivo),
+    datasets: [{ data: motivosData.map(m => m.pct), backgroundColor: ['#ef5350','#ffb74d','#4fc3f7','#66bb6a','#ab47bc','#9aa0a6'] }]
+  },
+  options: { plugins: { title: { display:true, text:'% de cancelaciones por motivo (CENTRAL)', color:'#e8eaed' }, legend: { position:'bottom', labels: { color:'#e8eaed' } } } }
+});
+</script>
+</body>
+</html>
