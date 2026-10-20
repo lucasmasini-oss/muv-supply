@@ -59,6 +59,7 @@ tr.base td{background:var(--s2)}
   <div class="bar">
     <div class="tabs" id="tabs"></div>
     <div class="sp"></div>
+    <div class="fg"><label>Período</label><select id="fPeriodo" style="min-width:170px"></select></div>
     <div class="fg"><label>Zona</label><select id="fZona">
       <option value="all">Polígono Core completo</option><option value="0">Zona 01</option><option value="1">Zona 04</option><option value="2">Zona 05</option><option value="3">Resto polígono</option></select></div>
     <div class="fg"><label>Día / bono</label><select id="fDia" style="min-width:260px"></select></div>
@@ -77,7 +78,12 @@ const ZL = ["Zona 01", "Zona 04", "Zona 05", "Resto polígono"];
 const LISTA = [141, 134];
 const C = { g: "#4ade80", r: "#f87171", a: "#fbbf24", b: "#60a5fa", n: "#8892a8", p: "#a78bfa", c: "#22d3ee" };
 
-const st = { tab: "resumen", zona: "all", hora: "all", dia: "all", enCurso: false };
+const st = { tab: "resumen", zona: "all", hora: "all", dia: "all", periodo: "all", enCurso: false };
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const mesesCampana = [...new Set(DATA.days.filter(d => d >= INICIO).map(d => d.slice(0, 7)))];
+const mesLabel = k => MESES[+k.slice(5, 7) - 1] + " " + k.slice(0, 4);
+const enPeriodo = d => st.periodo === "all" || d.slice(0, 7) === st.periodo;
+const periodoTxt = () => st.periodo === "all" ? "toda la campaña" : mesLabel(st.periodo);
 
 const fmtN = (n, d = 0) => { if (!isFinite(n)) return "—"; const [e, f] = Math.abs(n).toFixed(d).split("."); return (n < 0 ? "-" : "") + e.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (f ? "," + f : ""); };
 const fGs = n => "₲" + fmtN(n);
@@ -113,6 +119,7 @@ function model() {
   const hr = st.hora === "all" ? null : +st.hora, zi = st.zona === "all" ? null : +st.zona;
   const incl = d => {
     if (d < INICIO) return true;
+    if (!enPeriodo(d)) return false;
     if (st.dia !== "all") return d === st.dia;
     return bonoByDay.has(d) && (st.enCurso || d < EN_CURSO);
   };
@@ -157,6 +164,7 @@ function model() {
     const w = r[0], gg = r[1], share = pct(r[8], LISTA[gg]);
     if (w < INICIO) { retSum[gg] += share; if (gg === 0) nSemBase++; }
     else {
+      if (!enPeriodo(w) && !enPeriodo(new Date(new Date(w + "T12:00:00Z").getTime() + 6 * 864e5).toISOString().slice(0, 10))) continue;
       if (st.dia !== "all") { if (w !== mondayOf(st.dia)) continue; }
       else if (!st.enCurso && w >= EN_CURSO) continue;
       const x = RET.get(w) || [NaN, NaN, NaN, NaN]; x[gg] = share; x[2 + gg] = r[10]; RET.set(w, x);
@@ -172,6 +180,7 @@ function model() {
   }
   const BS = new Map(), BT = eB();
   for (const b of DATA.B) {
+    if (!enPeriodo(b.dt)) continue;
     if (st.dia !== "all" && b.dt !== st.dia) continue;
     if (st.dia === "all" && !st.enCurso && b.dt >= EN_CURSO) continue;
     const w = mondayOf(b.dt); if (!BS.has(w)) BS.set(w, eB()); addB(BS.get(w), b); addB(BT, b);
@@ -220,7 +229,7 @@ function render() {
   const acepD = a => pct(a.ac, a.of), hPorCond = (a, gg) => a.h / (LISTA[gg] * (a.dias.size || 1));
   const dTB = dg("baseline", 0), dCB = dg("baseline", 1), dTC = dg("campana", 0), dCC = dg("campana", 1);
   const bSel = st.dia !== "all" ? (m.bonoByDay.get(st.dia) || null) : null;
-  const filtro = (st.zona === "all" ? "polígono Core completo" : ZL[+st.zona]) + " · " + (st.hora === "all" ? "16:00–18:59" : st.hora + ":00–" + st.hora + ":59")
+  const filtro = periodoTxt() + " · " + (st.zona === "all" ? "polígono Core completo" : ZL[+st.zona]) + " · " + (st.hora === "all" ? "16:00–18:59" : st.hora + ":00–" + st.hora + ":59")
     + (bSel ? ` · ${dow(st.dia)} ${ddmm(st.dia)} (cód. ${bSel.cod})` : "");
   const sem = m.semanas.map(w => {
     const a = m.P.get(w), n = a.dias.size || 1, b = m.BS.get(w) || eB(), c = m.CT.get(w) || eC();
@@ -303,11 +312,18 @@ function render() {
         { label: "Horas CENTRAL", data: PH.map(x => r1(x.a.hc)), backgroundColor: C.a }] }, options: baseOpts() }) +
         `<div class="cap">Intenciones en el polígono; horas CENTRAL no filtran zona.</div></div></div>`;
     } else {
-    const dias = DATA.days.filter(d => { const a = m.D.get(d); return a && a.int > 0; });
+    const dias = DATA.days.filter(d => {
+      const a = m.D.get(d); if (!a || a.int <= 0) return false;
+      if (st.periodo === "all") return true;
+      return d >= INICIO && enPeriodo(d);
+    });
     const lab = d => ddmm(d) + (m.bonoByDay.has(d) ? "" : d >= INICIO ? " s/b" : "");
     const L = dias.map(lab), n = dias.length;
     const campStart = dias.findIndex(d => d >= INICIO);
-    h += `<div class="sub" style="margin-bottom:14px">Todos los días hábiles del ${ddmm(DATA.days[0])} al ${ddmm(DATA.days[DATA.days.length - 1])} · ${filtro}. "s/b" = día hábil de campaña sin bono. Línea punteada = promedio baseline. Campaña desde ${ddmm(INICIO)} (posición ${campStart + 1}).</div>`;
+    const rangoDiario = st.periodo === "all"
+      ? `Todos los días hábiles del ${ddmm(DATA.days[0])} al ${ddmm(DATA.days[DATA.days.length - 1])}`
+      : `Días hábiles de ${mesLabel(st.periodo)}`;
+    h += `<div class="sub" style="margin-bottom:14px">${rangoDiario} · ${filtro}. "s/b" = día hábil de campaña sin bono. Línea punteada = promedio baseline${st.periodo === "all" ? `. Campaña desde ${ddmm(INICIO)} (posición ${campStart + 1})` : " (27/07–21/08), que no entra en el eje"}.</div>`;
     h += `<div class="card sec"><h3>Finalización diaria</h3>` + chart("dF", { type: "line", data: { labels: L, datasets: [
       { label: "Finalización (%)", data: dias.map(d => { const a = m.D.get(d); return r1(pct(a.fin, a.int)); }), borderColor: C.g, backgroundColor: C.g, pointRadius: 2.5, tension: .2 },
       refLine("Baseline " + fP(finB), r1(finB), n, C.n)] }, options: baseOpts("%") }) + `<div class="cap">Eje X: día (dd/mm) · Eje Y: intenciones finalizadas / intenciones.</div></div>`;
@@ -350,7 +366,7 @@ function render() {
   }
 
   if (st.tab === "bono") {
-    const vis = DATA.B.filter(b => st.dia !== "all" ? b.dt === st.dia : (st.enCurso || b.dt < EN_CURSO));
+    const vis = DATA.B.filter(b => enPeriodo(b.dt) && (st.dia !== "all" ? b.dt === st.dia : (st.enCurso || b.dt < EN_CURSO)));
     h += `<div class="kg">${kpi(fmtN(bt.conv), `Convocados-día en ${bt.dias} días con bono`)}${kpi(fP(pct(bt.v1, bt.conv)), `Hicieron ≥1 viaje en la ventana · ${fmtN(bt.v1)}`, "mid")}
       ${kpi(fP(pct(bt.v2, bt.conv)), `Llegaron a 2 viajes · ${fmtN(bt.v2)}`)}${kpi(fP(convTot), `Cobraron (PAID) · ${fmtN(bt.paid)} · ${fmtN(bt.v2 - bt.paid)} con 2 viajes no cobraron`, convTot >= 7 ? "ok" : "bad")}</div>`;
     h += `<div class="call info"><b>Dónde se pierde el funnel</b>${fP(100 - pct(bt.v1, bt.conv), 0)} de los convocados-día no hace ni un viaje en la zona y ventana. El cuello de botella no es el segundo viaje (${fP(pct(bt.v2, bt.v1), 0)} de los que hacen uno llegan a dos), sino que el conductor no se conecte en la zona. ${fmtN(bt.v2 - bt.paid)} conductor-días con 2+ viajes no cobraron, probablemente por la tasa de aceptación (65–70%) o de cancelación (15%).</div>`;
@@ -490,7 +506,8 @@ function render() {
       ["Ganancia por hora", "(lc_ganancia_conductor de viajes FINISHED 16–19 h + bono PAID) / horas CENTRAL 16–19 h, listas test 141 y control 134."],
       ["Retención semanal", "% de la lista con ≥1 hora conectada en CENTRAL 16–19 h algún día hábil de la semana."],
       ["Baseline", "Los 20 días hábiles del 27/07 al 21/08 (pre-campaña)."],
-      ["Semana de campaña", "Solo los días con bono. El filtro Día / bono deja un solo código; el baseline se mantiene para comparar."]].map(r => [r[0], `<span style="font-family:var(--ff);white-space:normal">${r[1]}</span>`])) + `</div>`;
+      ["Período", "Mes de la campaña. Recorta gráficos, funnel y KPIs a ese mes. El baseline (27/07–21/08) no cambia."],
+      ["Semana de campaña", "Solo los días con bono del período elegido. El filtro Día / bono deja un solo código; el baseline se mantiene para comparar."]].map(r => [r[0], `<span style="font-family:var(--ff);white-space:normal">${r[1]}</span>`])) + `</div>`;
     h += `<div class="meta"><h3>Diferencias con los reportes semanales</h3>
       <p>La campaña empezó el 24/08 (S35), no el 31/08: hay 5 bonos ZONAS_CORE esa semana, con 168–202 convocados y AR mínimo 70% los dos primeros días.</p>
       <p>El reporte S36 cubría lun–jue; acá S36 incluye el viernes 04/09.</p>
@@ -511,17 +528,32 @@ function renderTabs() {
 }
 document.getElementById("subtitle").textContent = `Bono ₲23.000–25.000 por 2 viajes finalizados de 16 a 19 h, lista cerrada. Campaña desde el 24/08/2026 contra baseline pre-campaña (27/07–21/08, lun–vie). Datos al ${DATA.fechaDatos}.`;
 const selDia = document.getElementById("fDia");
-selDia.innerHTML = `<option value="all">Todos los días con bono</option>` + DATA.B.slice().sort((a, b) => a.dt.localeCompare(b.dt)).map(b =>
-  `<option value="${b.dt}">${dow(b.dt)} ${ddmm(b.dt)} · #${b.cod} · ${b.conv} conv.</option>`).join("");
-selDia.value = st.dia;
+const selPeriodo = document.getElementById("fPeriodo");
+function muestraEnCurso() { return HAY_EN_CURSO && st.dia === "all" && (st.periodo === "all" || EN_CURSO.slice(0, 7) === st.periodo); }
+function fillDia() {
+  const dias = DATA.B.slice().filter(b => enPeriodo(b.dt)).sort((a, b) => a.dt.localeCompare(b.dt));
+  selDia.innerHTML = `<option value="all">Todos los días con bono</option>` + dias.map(b =>
+    `<option value="${b.dt}">${dow(b.dt)} ${ddmm(b.dt)} · #${b.cod} · ${b.conv} conv.</option>`).join("");
+  if (st.dia !== "all" && !dias.some(b => b.dt === st.dia)) st.dia = "all";
+  selDia.value = st.dia;
+}
+selPeriodo.innerHTML = `<option value="all">Toda la campaña</option>` + mesesCampana.map(k => `<option value="${k}">${mesLabel(k)}</option>`).join("");
+selPeriodo.value = st.periodo;
+fillDia();
 document.getElementById("fZona").onchange = e => { st.zona = e.target.value; render(); };
 document.getElementById("fHora").onchange = e => { st.hora = e.target.value; render(); };
-selDia.onchange = e => { st.dia = e.target.value; document.getElementById("enCursoWrap").style.display = (HAY_EN_CURSO && st.dia === "all") ? "" : "none"; render(); };
+selPeriodo.onchange = e => {
+  st.periodo = e.target.value;
+  fillDia();
+  document.getElementById("enCursoWrap").style.display = muestraEnCurso() ? "" : "none";
+  render();
+};
+selDia.onchange = e => { st.dia = e.target.value; document.getElementById("enCursoWrap").style.display = muestraEnCurso() ? "" : "none"; render(); };
 if (HAY_EN_CURSO) {
   document.getElementById("enCursoLbl").textContent = `S${isoWeek(EN_CURSO)} (en curso)`;
   document.getElementById("fEnCurso").onchange = e => { st.enCurso = e.target.checked; render(); };
 }
-document.getElementById("enCursoWrap").style.display = (HAY_EN_CURSO && st.dia === "all") ? "" : "none";
+document.getElementById("enCursoWrap").style.display = muestraEnCurso() ? "" : "none";
 renderTabs(); render();
 </script>
 </body>
