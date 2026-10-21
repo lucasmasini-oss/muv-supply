@@ -9,19 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0b0d12;--s1:#12151d;--s2:#191d28;--brd:#262d3d;--tx:#e2e6f0;--tx2:#9aa3b8;--tx3:#646c80;
---g:#4ade80;--gd:rgba(74,222,128,.12);--r:#f87171;--rd:rgba(248,113,113,.12);--a:#fbbf24;--ad:rgba(251,191,36,.12);
---b:#60a5fa;--bd:rgba(96,165,250,.12);--ff:'DM Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+:root{--bg:#f3f5fa;--s1:#ffffff;--s2:#eef1f8;--brd:#dce1ee;--tx:#1a2133;--tx2:#4f5a75;--tx3:#8791a8;
+--ac:#4f46e5;--acd:rgba(79,70,229,.10);
+--g:#15803d;--gd:rgba(22,163,74,.12);--r:#dc2626;--rd:rgba(220,38,38,.10);--a:#b45309;--ad:rgba(217,119,6,.13);
+--b:#2563eb;--bd:rgba(37,99,235,.10);--ff:'DM Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
 body{font-family:var(--ff);background:var(--bg);color:var(--tx);font-size:13px}
 .wrap{max-width:1400px;margin:0 auto;padding:22px 26px 60px}
-.eyebrow{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);font-weight:700}
+.eyebrow{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac);font-weight:700}
+.wrap{border-top:4px solid var(--ac)}
+.card,.kc,.tabs,.tw,.call{box-shadow:0 1px 2px rgba(26,33,51,.05)}
+.kc{border-top:2px solid var(--acd)}
+.btn:hover{border-color:var(--ac)}
 h1{font-size:22px;margin:6px 0 6px}h2{font-size:16px;margin:4px 0 10px}h3{font-size:13px;margin-bottom:6px}
 .sub{color:var(--tx2);font-size:12px;line-height:1.5}
 .cap{color:var(--tx3);font-size:10.5px;margin-top:6px;line-height:1.45}
 .bar{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:16px 0 18px;padding-bottom:16px;border-bottom:1px solid var(--brd)}
 .tabs{display:flex;gap:4px;flex-wrap:wrap;background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:3px}
 .tab{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--tx2);border:none;background:none;font-family:var(--ff)}
-.tab:hover{color:var(--tx)}.tab.on{background:var(--gd);color:var(--g)}
+.tab:hover{color:var(--tx)}.tab.on{background:var(--ac);color:#fff}
 .sp{flex:1}
 .fg{display:flex;flex-direction:column;gap:3px}.fg label{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;color:var(--tx3);font-weight:700}
 select,input[type=text],input[type=number]{background:var(--s2);border:1px solid var(--brd);color:var(--tx);padding:7px 9px;border-radius:7px;font-family:var(--ff);font-size:12px;min-width:120px}
@@ -43,11 +48,11 @@ input[type=number]{min-width:80px;width:90px}
 .tw{overflow:auto;border:1px solid var(--brd);border-radius:10px;max-height:620px}
 table{width:100%;border-collapse:collapse;font-size:11.5px}thead{background:var(--s2);position:sticky;top:0;z-index:2}
 th{padding:8px;text-align:right;font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);border-bottom:1px solid var(--brd);white-space:nowrap}
-th.sort{cursor:pointer}th.sort:hover{color:var(--tx)}th.cur{color:var(--g)}
+th.sort{cursor:pointer}th.sort:hover{color:var(--tx)}th.cur{color:var(--ac)}
 td{padding:7px 8px;border-bottom:1px solid var(--brd);font-family:var(--mono);font-size:11px;text-align:right;white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
 td.txt{font-family:var(--ff);text-align:left}
-tr.base td{background:var(--s2)}tr.clk{cursor:pointer}tr.clk:hover td{background:var(--s2)}tr.sel td{background:var(--gd)}
+tr.base td{background:var(--s2)}tr.clk{cursor:pointer}tr.clk:hover td{background:var(--s2)}tr.sel td{background:var(--acd)}
 tr.grp td{background:var(--s2);font-family:var(--ff);font-weight:700;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--tx3)}
 .pill{display:inline-block;padding:1px 7px;border-radius:9px;font-size:10px;font-family:var(--ff);font-weight:600}
 .pill.ok{background:var(--gd)}.pill.mid{background:var(--ad)}.pill.bad{background:var(--rd)}.pill.neu{background:var(--s2)}
@@ -81,7 +86,8 @@ const PUB = !!DATA.publico;   // version publica: conductores anonimizados y sin
 const PRIV = {};
 const HAY_PARC = SEM.includes(PARC);
 const COMPLETAS = SEM.filter(s => s < PARC);
-const C = { g: "#4ade80", r: "#f87171", a: "#fbbf24", b: "#60a5fa", n: "#8892a8", p: "#a78bfa", c: "#22d3ee" };
+const C = { g: "#16a34a", r: "#dc2626", a: "#d97706", b: "#2563eb", n: "#7b86a0", p: "#7c3aed", c: "#0891b2", ac: "#4f46e5" };
+Chart.defaults.color = "#4f5a75"; Chart.defaults.font.family = "'DM Sans',system-ui,sans-serif";
 const st = { tab: "resumen", cat: "all", panel: "all", parcial: false, meta: 160, met: "h", vista: "evo", sort: { k: "tot", dir: -1 }, q: "", drv: null, mkSlice: "all", mkFrom: null, mkTo: null, soloDeb: false };
 
 const fmtN = (n, d = 0) => { if (!isFinite(n)) return "—"; const [e, f] = Math.abs(n).toFixed(d).split("."); return (n < 0 && +n.toFixed(d) !== 0 ? "-" : "") + e.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (f ? "," + f : ""); };
@@ -161,12 +167,12 @@ const reg = [];
 function chart(id, cfg, small) { reg.push([id, cfg]); return `<div class="ch${small ? " s" : ""}"><canvas id="${id}"></canvas></div>`; }
 function mountCharts() { for (const [id, cfg] of reg) { if (live[id]) live[id].destroy(); const el = document.getElementById(id); if (el) live[id] = new Chart(el, cfg); } reg.length = 0; }
 function killCharts(prefix = "") { for (const k of Object.keys(live)) if (k.startsWith(prefix)) { live[k].destroy(); delete live[k]; } }
-const grid = "#1c2130", tick = "#8892a8";
+const grid = "#e6eaf3", tick = "#6b7590";
 function opts(suffix = "", y = {}, y2 = null) {
   const sc = { x: { ticks: { color: tick, font: { size: 10 } }, grid: { color: grid } }, y: { ticks: { color: tick, callback: v => fmtN(v) + suffix }, grid: { color: grid }, ...y } };
   if (y2) sc.y2 = { position: "right", ticks: { color: tick, callback: v => fmtN(v) + (y2.suffix || "") }, grid: { drawOnChartArea: false }, ...y2 };
   return { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
-    plugins: { legend: { labels: { color: "#9aa3b8", boxWidth: 12, font: { size: 11 } } },
+    plugins: { legend: { labels: { color: "#4f5a75", boxWidth: 12, font: { size: 11 } } },
       tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y === null ? "—" : fmtN(c.parsed.y, 1)}${c.dataset.yAxisID === "y2" ? (y2 && y2.suffix || "") : suffix}` } } }, scales: sc };
 }
 const nz = v => isFinite(v) ? +v.toFixed(2) : null;
@@ -370,14 +376,14 @@ function vMkt(m) {
   const dH = pct((BB.hG + BB.hR) - (AA.hG + AA.hR), AA.hG + AA.hR);
   const efDen = dN < -10 && B.fin > A.fin;
   const call = `<div class="call ${efDen ? "" : "info"}"><b>${SL[s]} · ${semS(st.mkFrom)} → ${semS(st.mkTo)}</b>Finalización del marketplace ${fP(A.fin)} → ${fP(B.fin)} (${dTxt(M.finr, B.fin - A.fin)}): grupo ${gp >= 0 ? "+" : ""}${fmtN(gp, 1)} pp y resto ${rp >= 0 ? "+" : ""}${fmtN(rp, 1)} pp. Intenciones ${fmtN(A.N)} → ${fmtN(B.N)} (${dTxt(M.h, dN)}), no finalizadas ${dTxt(M.h, dX)}, finalizadas totales ${dTxt(M.h, dFinT)}${s === "all" ? `, horas conectadas CENTRAL ${dTxt(M.h, dH)}` : ""}. ${efDen ? "La finalización subió con menos intenciones: parte de la mejora es efecto denominador (menos demanda sin atender), no más viajes." : "Compará volúmenes y tasas: una tasa puede subir porque cae el denominador."} Aceptación ${fP(A.arM)} → ${fP(B.arM)}; el grupo aporta ${fmtN(B.arM - arCf, 1)} pp (con su aceptación congelada en ${semS(st.mkFrom)} el marketplace habría dado ${fP(arCf)}).</div>`;
-  const c1 = lineCfg(lab, [L("Grupo Amplify", X.map(x => x.arG), C.g), L("Resto de conductores", X.map(x => x.arR), C.n), L("Marketplace", X.map(x => x.arM), C.b, { borderDash: [5, 4] })], "%", { beginAtZero: true });
-  const c2 = mixCfg(lab, [Bs("Finalizadas por el grupo", X.map(x => x.G), C.g, { stack: "a" }), Bs("Finalizadas por el resto", X.map(x => x.R), C.b, { stack: "a" }), Bs("No finalizadas", X.map(x => x.X), C.r, { stack: "a" })], "", { beginAtZero: true, stacked: true });
+  const c1 = lineCfg(lab, [L("Grupo Amplify", X.map(x => x.arG), C.ac), L("Resto de conductores", X.map(x => x.arR), C.n), L("Marketplace", X.map(x => x.arM), C.b, { borderDash: [5, 4] })], "%", { beginAtZero: true });
+  const c2 = mixCfg(lab, [Bs("Finalizadas por el grupo", X.map(x => x.G), C.ac, { stack: "a" }), Bs("Finalizadas por el resto", X.map(x => x.R), C.b, { stack: "a" }), Bs("No finalizadas", X.map(x => x.X), C.r, { stack: "a" })], "", { beginAtZero: true, stacked: true });
   c2.options.scales.x.stacked = true;
   const c3 = lineCfg(lab, [L("Finalización marketplace", X.map(x => x.fin), C.a), L("Aporte del grupo (finalizadas grupo / intenciones)", X.map(x => x.gN), C.g, { borderDash: [5, 4] }), L("Aporte del resto", X.map(x => x.rN), C.b, { borderDash: [5, 4] })], "%", { beginAtZero: true });
   const all = wk.map(w => mk(w, "all"));
   const c4 = lineCfg(lab, [L("% de horas conectadas", all.map(x => x.shH), C.n), L("% de ofertas recibidas", all.map(x => x.shOf), C.c), L("% de ofertas aceptadas", all.map(x => x.shAc), C.b), L("% de viajes finalizados", all.map(x => x.shV), C.g)], "%", { beginAtZero: true });
-  const c5 = lineCfg(lab, [L("Grupo Amplify", all.map(x => x.vphG), C.g), L("Resto de conductores", all.map(x => x.vphR), C.n)], "", { beginAtZero: true });
-  const c6 = lineCfg(lab, [L("Grupo Amplify", all.map(x => x.finG), C.g), L("Resto de conductores", all.map(x => x.finR), C.n)], "%", { beginAtZero: false });
+  const c5 = lineCfg(lab, [L("Grupo Amplify", all.map(x => x.vphG), C.ac), L("Resto de conductores", all.map(x => x.vphR), C.n)], "", { beginAtZero: true });
+  const c6 = lineCfg(lab, [L("Grupo Amplify", all.map(x => x.finG), C.ac), L("Resto de conductores", all.map(x => x.finR), C.n)], "%", { beginAtZero: false });
   const tb = tabla(["Semana", "Intenciones", "Fin. grupo", "Fin. resto", "No fin.", "Finalización", "Acept. grupo", "Acept. resto", "Acept. mkt", "% ofertas grupo", "% aceptadas grupo"],
     wk.map((w, i) => { const x = X[i]; return [semL(w), d0(x.N), d0(x.G), d0(x.R), d0(x.X), fP(x.fin), fP(x.arG), fP(x.arR), fP(x.arM), fP(x.shOf), fP(x.shAc)]; }));
   const tb2 = tabla(["Semana", "Horas grupo", "Horas resto", "% horas grupo", "Conductores grupo", "Conductores resto", "Fin. grupo", "Fin. resto", "% fin. grupo", "Viajes/h grupo", "Viajes/h resto", "Finalización viajes grupo", "Finalización viajes resto"],
