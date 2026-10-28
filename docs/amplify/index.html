@@ -42,6 +42,7 @@ input[type=number]{min-width:80px;width:90px}
 .ok{color:var(--g)}.bad{color:var(--r)}.mid{color:var(--a)}.neu{color:var(--tx2)}
 .call{border:1px solid var(--brd);border-left:3px solid var(--a);background:var(--s1);border-radius:8px;padding:12px 14px;margin-bottom:18px;line-height:1.55}
 .call.info{border-left-color:var(--b)}.call b{display:block;margin-bottom:3px}
+.call.sm{font-size:12px;line-height:1.45;padding:8px 12px;margin:18px 0 0;opacity:.85}.call.sm b{font-size:12px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:20px}
 .card{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:16px}
 .ch{position:relative;height:280px}.ch.s{height:210px}
@@ -211,14 +212,14 @@ function vResumen(m) {
   const cumPrev = idsIn.filter(d => (hByDW.get(d + "|" + prev) || 0) >= metaSem()).length;
   const k8 = kpi(fP(cumpleP, 0), `Conductores con ≥ ${fmtN(metaSem(), 1)} h en la semana · ${semS(last)}`, `${cumple} de ${idsIn.length} · semana previa: ${cumPrev}<br>meta ${fmtN(st.meta)} h/mes ≈ ${fmtN(metaSem(), 1)} h/sem`);
   const ar0 = f("ar", first), ar1 = f("ar", last), fi0 = f("finr", first), fi1 = f("finr", last), h0 = f("h", first), h1 = f("h", last), e0 = f("eph", first), e1 = f("eph", last);
-  const call = `<div class="call info"><b>Lectura rápida · ${semS(first)} → ${semS(last)} (semanas completas)</b>Aceptación ${fP(ar0)} → ${fP(ar1)} (${dTxt(M.ar, ar1 - ar0)}), finalización ${fP(fi0)} → ${fP(fi1)} (${dTxt(M.finr, fi1 - fi0)}), horas conectadas ${fmtN(h0)} → ${fmtN(h1)} (${dTxt(M.h, pct(h1 - h0, h0))}), EPH ${fGs(e0)} → ${fGs(e1)} (${dTxt(M.eph, pct(e1 - e0, e0))}). Es la evolución calendario del grupo completo (los conductores se fueron sumando): para separar el efecto de la pantalla mirá "Antes / después".</div>`;
+  const call = `<div class="call info sm"><b>Insights · ${semS(first)} → ${semS(last)} (semanas completas)</b>Aceptación ${fP(ar0)} → ${fP(ar1)} (${dTxt(M.ar, ar1 - ar0)}), finalización ${fP(fi0)} → ${fP(fi1)} (${dTxt(M.finr, fi1 - fi0)}), horas conectadas ${fmtN(h0)} → ${fmtN(h1)} (${dTxt(M.h, pct(h1 - h0, h0))}), EPH ${fGs(e0)} → ${fGs(e1)} (${dTxt(M.eph, pct(e1 - e0, e0))}). Es la evolución calendario del grupo completo (los conductores se fueron sumando): para separar el efecto de la pantalla mirá "Antes / después".</div>`;
   const bd = bandas(hLast), nb = bd.reduce((a, b) => a + b, 0);
   const bandRows = [["Sin horas", bd[0]], ["< 50% de la meta", bd[1]], ["50–80%", bd[2]], ["80–100%", bd[3]], ["≥ 100% de la meta", bd[4]]].map(([t, v]) => [t, fmtN(v), fP(pct(v, nb), 0)]);
   const ch1 = lineCfg(lab, [L("Aceptación", wk.map(w => f("ar", w)), C.g), L("Aceptación en pico", wk.map(w => f("arp", w)), C.b, { borderDash: [5, 4] }), L("Finalización (viajes)", wk.map(w => f("finr", w)), C.a)], "%", { beginAtZero: true });
   const ch2 = mixCfg(lab, [Bs("Horas conectadas", wk.map(w => f("h", w)), C.b, { yAxisID: "y" }), L("Viajes finalizados", wk.map(w => f("fin", w)), C.g, { yAxisID: "y2" })], "", { beginAtZero: true }, { beginAtZero: true });
   const ch3 = lineCfg(lab, [L("EPH (₲ por hora)", wk.map(w => f("eph", w)), C.g, { yAxisID: "y" }), L("EPT (₲ por viaje)", wk.map(w => f("ept", w)), C.p, { yAxisID: "y2" })], "", { beginAtZero: false }, { beginAtZero: false });
   const ch4 = lineCfg(lab, [L("Conductores activos", wk.map(w => f("n", w)), C.c, { yAxisID: "y" }), L("Horas por conductor activo", wk.map(w => f("hpc", w)), C.a, { yAxisID: "y2" })], "", { beginAtZero: true }, { beginAtZero: true });
-  return `${call}
+  return `
   <div class="kg">${cardK("n", "Conductores activos")}${cardK("h", "Horas conectadas")}${cardK("fin", "Viajes finalizados")}${k8}
   ${cardK("ar", "Aceptación")}${cardK("finr", "Finalización")}${cardK("eph", "EPH")}${cardK("ept", "EPT")}</div>
   <div class="g2"><div class="card"><h3>Aceptación y finalización por semana</h3>${chart("r1", ch1)}<div class="cap">Eje X: semana (lun–dom; * = parcial) · Eje Y: % · aceptación = ofertas distintas aceptadas / recibidas; finalización = viajes finalizados / asignados.</div></div>
@@ -226,7 +227,7 @@ function vResumen(m) {
   <div class="card"><h3>EPH y EPT</h3>${chart("r3", ch3)}<div class="cap">EPH = ganancia del conductor en viajes finalizados / horas conectadas (eje izq.). EPT = ganancia / viaje finalizado (eje der.). Sin bonos.</div></div>
   <div class="card"><h3>Conductores activos y horas por conductor</h3>${chart("r4", ch4)}<div class="cap">Activo = con al menos una hora conectada en la semana.</div></div></div>
   <div class="g2"><div class="card"><h3>Cumplimiento de horas · ${semS(last)} (referencia)</h3>${tabla(["Banda (h/semana vs meta)", "Conductores", "%"], bandRows)}<div class="cap">${PUB ? `Meta de horas de referencia: ${fmtN(st.meta)} h por mes (≈ ${fmtN(metaSem(), 1)} h/sem), editable arriba. Se miden las horas en línea de muv.` : PRIV.cap(metaSem())}</div></div>
-  <div class="card"><h3>Conductores que alcanzan la meta de horas, por semana</h3>${tabla(["Semana", "Conductores ≥ meta", "% del grupo"], COMPLETAS.map(w => { const n = idsIn.filter(d => (hByDW.get(d + "|" + w) || 0) >= metaSem()).length; return [semL(w), fmtN(n) + " de " + idsIn.length, fP(pct(n, idsIn.length), 0)]; }))}<div class="cap">Meta semanal ≈ ${fmtN(metaSem(), 1)} h (meta mensual × 12/52). Semanas completas, con el panel seleccionado.</div></div></div>`;
+  <div class="card"><h3>Conductores que alcanzan la meta de horas, por semana</h3>${tabla(["Semana", "Conductores ≥ meta", "% del grupo"], COMPLETAS.map(w => { const n = idsIn.filter(d => (hByDW.get(d + "|" + w) || 0) >= metaSem()).length; return [semL(w), fmtN(n) + " de " + idsIn.length, fP(pct(n, idsIn.length), 0)]; }))}<div class="cap">Meta semanal ≈ ${fmtN(metaSem(), 1)} h (meta mensual × 12/52). Semanas completas, con el panel seleccionado.</div></div></div>${call}`;
 }
 
 // ---- por semana

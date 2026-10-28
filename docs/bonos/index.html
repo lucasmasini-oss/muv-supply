@@ -32,6 +32,7 @@ select{background:var(--s2);border:1px solid var(--brd);color:var(--tx);padding:
 .ok{color:var(--g)}.bad{color:var(--r)}.mid{color:var(--a)}.neu{color:var(--tx2)}
 .call{border:1px solid var(--brd);border-left:3px solid var(--a);background:var(--s1);border-radius:8px;padding:12px 14px;margin-bottom:18px;line-height:1.55}
 .call.info{border-left-color:var(--b)}.call b{display:block;margin-bottom:3px}
+.call.sm{font-size:12px;line-height:1.45;padding:8px 12px;margin:18px 0 0;opacity:.85}.call.sm b{font-size:12px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}.g2.w{grid-template-columns:1.3fr 1fr}
 .card{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:16px}
 .ch{position:relative;height:300px}.ch.s{height:260px}
@@ -249,7 +250,7 @@ function render() {
   let h = "";
 
   if (st.tab === "resumen") {
-    h += `<div class="call"><b>Lectura rápida</b>${bSel
+    const callR = `<div class="call sm"><b>Insights</b>${bSel
       ? `Bono ${bSel.cod} · ${dow(st.dia)} ${ddmm(st.dia)} ${bSel.ventana} · ${fGs(bSel.monto)} · AR mín. ${bSel.ar}%. En ${filtro} la finalización fue ${fP(finC)} vs ${fP(finB)} en baseline (${fPp(finC - finB)}). Conversión ${fP(convTot)} (${fmtN(bt.paid)} PAID / ${fmtN(bt.conv)} convocados). Costo ${fGs(bt.costo)} · ${fmtN(bt.viajes)} viajes · ${fGs(cpvTot)} por viaje.`
       : `En días con bono (${filtro}), la finalización es ${fP(finC)} vs ${fP(finB)} en baseline (${fPp(finC - finB)}). En las zonas Alta Demanda sin bono, los mismos días, se movió ${fPp(cFinC - cFinB)}: la diferencia atribuible al bono (diff-in-diff) es <b style="display:inline">${fPp(didFin)}</b> en finalización y ${fPp(didAc)} en aceptación. La demanda cayó parecido en ambos lados (${fD(pct(demC - demB, demB))} vs ${fD(pct(cDemC - cDemB, cDemB))}). El bono convierte ${fP(convTot)} de los convocados y cuesta ${fGs(cpvTot)} por viaje de los PAID (${fP(subTot)} del GMV de esos viajes).`}</div>`;
     h += `<div class="kg">
@@ -288,6 +289,7 @@ function render() {
         { label: "Sin conductor (NDF + no aceptada)", data: periods.map(p => r1(pct(p[1].ndf + p[1].ndac, p[1].int))), backgroundColor: C.r }] },
       options: baseOpts("%", { root: { scales: { x: { stacked: true, ticks: { color: "#8892a8" } }, y: { stacked: true, max: 100, ticks: { color: "#8892a8", callback: v => v + "%" } } } } }) }) +
       `<div class="cap">Estado final de cada intención, % apilado · ${filtro}. "Sin conductor" es la parte que un bono de supply debería reducir.</div></div>`;
+    h += callR;
   }
 
   if (st.tab === "diario") {

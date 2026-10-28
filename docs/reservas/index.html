@@ -39,6 +39,7 @@ input[type=number]{min-width:70px;width:80px}
 .ok{color:var(--g)}.bad{color:var(--r)}.mid{color:var(--a)}.neu{color:var(--tx2)}
 .call{border:1px solid var(--brd);border-left:3px solid var(--a);background:var(--s1);border-radius:8px;padding:12px 14px;margin-bottom:18px;line-height:1.55}
 .call.info{border-left-color:var(--b)}.call b{display:block;margin-bottom:3px}
+.call.sm{font-size:12px;line-height:1.45;padding:8px 12px;margin:18px 0 0;opacity:.85}.call.sm b{font-size:12px}
 .g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-bottom:20px}
 .card{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:16px}
 .ch{position:relative;height:280px}
@@ -251,7 +252,7 @@ function vResumen() {
   const aspIn = cur.in[1] ? cur.in[2] / cur.in[1] : NaN, aspRes = cur.res[1] ? cur.res[2] / cur.res[1] : NaN;
   const acc = rows.filter(r => r.act !== "OK" && r.act !== "Inactivo").length;
   const cnt = k => rows.filter(r => r.dist === k).length;
-  const call = `<div class="call info"><b>Lectura rápida · ${perTxt(P)}</b>De ${N} conductores del grupo, ${cur.n[2]} hicieron al menos un viaje finalizado: ${cur.n[0]} in-app y ${cur.n[1]} de reservas / logística. El ${fP(pct(cur.in[1], cur.tot[1]), 0)} de sus viajes finalizados fue in-app (${fmtN(cur.in[1])} in-app vs ${fmtN(cur.res[1])} de reservas / logística). Según la regla de control: ${cnt("C")} controlados, ${cnt("A")} para ajustar, ${cnt("S")} sin viajes in-app y ${cnt("I")} inactivos. El detalle por conductor está en "Control del grupo".</div>`;
+  const call = `<div class="call info sm"><b>Insights · ${perTxt(P)}</b>De ${N} conductores del grupo, ${cur.n[2]} hicieron al menos un viaje finalizado: ${cur.n[0]} in-app y ${cur.n[1]} de reservas / logística. El ${fP(pct(cur.in[1], cur.tot[1]), 0)} de sus viajes finalizados fue in-app (${fmtN(cur.in[1])} in-app vs ${fmtN(cur.res[1])} de reservas / logística). Según la regla de control: ${cnt("C")} controlados, ${cnt("A")} para ajustar, ${cnt("S")} sin viajes in-app y ${cnt("I")} inactivos. El detalle por conductor está en "Control del grupo".</div>`;
   const kg = `<div class="kg">
     ${K("Viajes in-app finalizados", c => c.in[1], d0)}
     ${K("Viajes de reservas + logística finalizados", c => c.res[1], d0, { neutral: true })}
@@ -280,7 +281,7 @@ function vResumen() {
   const lrows = LIN.map((nm, l) => [nm, SIDE_OF[l] ? "Reservas + logística" : "In-app", fmtN(lt[l][0]), fmtN(lt[l][1]), fP(pct(lt[l][1], tf), 0), fP(pct(lt[l][1], lt[l][0]), 0), fGs(lt[l][2]), lt[l][1] ? fGs(lt[l][2] / lt[l][1]) : "—", fmtN(ln[l])]).filter((r, l) => lt[l][0] + lt[l][1] > 0);
   // semáforo de acciones
   const arows = ACTS.map(([a, c]) => { const n = rows.filter(r => r.act === a).length; return [pill(c, a), fmtN(n), fP(pct(n, N), 0), fmtN(rows.filter(r => r.act === a && r.g === "Reservas").length), fmtN(rows.filter(r => r.act === a && r.g !== "Reservas").length)]; });
-  return `${call}${kg}
+  return `${kg}
   <div class="g2">
     ${card("Viajes finalizados: in-app vs reservas + logística, por semana", chart("r1", ch1), "Barras apiladas (eje izq.) y % in-app sobre el total (eje der.). Semana lun–dom; * = parcial.")}
     ${card("Conductores por estado de distribución, por semana", chart("r2", ch2), "Regla: Controlado = más viajes in-app que de reservas y reservas dentro del tope semanal; Ajustar = el resto con viajes in-app; Sin viajes in-app = solo reservas / logística; Inactivo = sin viajes. Tope prorrateado en semanas parciales.")}
@@ -290,7 +291,7 @@ function vResumen() {
   <div class="g2">
     <div class="sec"><h2>Por línea de negocio · ${perTxt(P)}</h2>${tabla(["Línea", "Lado", "Asignados", "Finalizados", "% del total", "Finalización", "Ganancia", "Ganancia / viaje", "Conductores"], lrows)}<div class="cap">Reserva = viaje WEB-SCHEDULED; in-app = todo lo demás. La línea de negocio (B2C, B2B in-app, B2B Reservas, Logística) es el detalle. Ganancia = ganancia del conductor en viajes finalizados, sin bonos.</div></div>
     <div class="sec"><h2>Acción sugerida · ${perTxt(P)}</h2>${tabla(["Acción", "Conductores", "% del grupo", "Tipo Reservas", "Tipo B2C"], arows)}<div class="cap">Una acción por conductor, por prioridad (la primera que aplica). Los umbrales se editan en "Control del grupo".</div></div>
-  </div>`;
+  </div>${call}`;
 }
 
 // ---------- EVOLUCIÓN
